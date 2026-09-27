@@ -116,6 +116,18 @@ class BuildNoticeTests(unittest.TestCase):
                 monitor=monitor,
             )
 
+    def test_build_notice_propagates_type_errors_for_malformed_payloads(self) -> None:
+        monitor = ShipMonitor("Cruiseship Rotterdam", threshold_meters=10)
+
+        with patch("trafficlight.__main__.read_payload", return_value={"latitude": None, "longitude": 4.479622}):
+            with self.assertRaises(TypeError):
+                build_notice(
+                    source="https://example.com/rotterdam.json",
+                    latitude_field="latitude",
+                    longitude_field="longitude",
+                    monitor=monitor,
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

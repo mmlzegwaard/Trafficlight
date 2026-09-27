@@ -64,6 +64,7 @@ def build_notice(
     longitude_field: str,
     monitor: ShipMonitor,
 ) -> str | None:
+    http_source(source)
     payload = read_payload(source)
     position = extract_position(
         payload,
