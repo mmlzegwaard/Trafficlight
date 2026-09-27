@@ -150,3 +150,26 @@ test('tracker returns fallback location when source is not configured', async ()
     updatedAt: polledStatus.currentPosition.updatedAt,
   });
 });
+
+test('tracker deduplicates concurrent polls', async () => {
+  let fetchCalls = 0;
+  const tracker = new RotterdamTracker({
+    sourceUrl: 'https://example.test/rotterdam.json',
+    fetchJson: async () => {
+      fetchCalls += 1;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      return {
+        name: 'Rotterdam',
+        latitude: 51.9225,
+        longitude: 4.47917,
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      };
+    },
+    sendAlert: async () => ({ sent: true, reason: 'sent' }),
+  });
+
+  const [first, second, third] = await Promise.all([tracker.poll(), tracker.poll(), tracker.poll()]);
+  assert.equal(fetchCalls, 1);
+  assert.deepEqual(first, second);
+  assert.deepEqual(second, third);
+});

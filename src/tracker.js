@@ -135,6 +135,7 @@ export class RotterdamTracker {
     this.fetchJson = fetchJson;
     this.sendAlert = sendAlert;
     this.timer = null;
+    this.pollPromise = null;
     const initialCheckedAt = this.sourceUrl ? null : new Date().toISOString();
     const initialFallbackPosition = this.sourceUrl
       ? null
@@ -159,64 +160,81 @@ export class RotterdamTracker {
   }
 
   async poll() {
-    this.state.lastCheckedAt = new Date().toISOString();
-
-    if (!this.sourceUrl) {
-      this.state = {
-        ...this.state,
-        currentPosition: buildFallbackPosition(this.shipName, this.state.lastCheckedAt),
-        previousPosition: this.state.currentPosition,
-        distanceMeters: 0,
-        alertActive: false,
-        lastAlertAt: null,
-        lastEmailStatus: null,
-        error: null,
-      };
-      return this.getStatus();
+    if (this.pollPromise) {
+      return this.pollPromise;
     }
 
+    this.pollPromise = (async () => {
+      this.state.lastCheckedAt = new Date().toISOString();
+
+      if (!this.sourceUrl) {
+        this.state = {
+          ...this.state,
+          currentPosition: buildFallbackPosition(this.shipName, this.state.lastCheckedAt),
+          previousPosition: this.state.currentPosition,
+          distanceMeters: 0,
+          alertActive: false,
+          lastAlertAt: null,
+          lastEmailStatus: null,
+          error: null,
+        };
+        return this.getStatus();
+      }
+
+      try {
+        const payload = await this.fetchJson(this.sourceUrl);
+        const currentPosition = extractRotterdamPosition(payload, this.shipName);
+
+        if (!currentPosition) {
+          throw new Error(`ship_not_found:${this.shipName}`);
+        }
+
+        const previousPosition = this.state.currentPosition;
+        const wasAlertActive = this.state.alertActive;
+        const distanceMeters = previousPosition
+          ? calculateDistanceMeters(previousPosition, currentPosition)
+          : 0;
+        const alertActive = Boolean(previousPosition) && distanceMeters >= this.alertThresholdMeters;
+
+        this.state = {
+          ...this.state,
+          currentPosition,
+          previousPosition,
+          distanceMeters,
+          alertActive,
+          lastAlertAt: null,
+          lastEmailStatus: null,
+          error: null,
+        };
+
+        if (alertActive && !wasAlertActive) {
+          const lastEmailStatus = await this.sendAlert({
+            to: this.alertEmail,
+            subject: `Rotterdam alert: ${distanceMeters.toFixed(2)} meter verplaatst`,
+            body: buildAlertMessage(currentPosition, distanceMeters),
+          });
+
+          this.state.lastAlertAt = new Date().toISOString();
+          this.state.lastEmailStatus = lastEmailStatus;
+        }
+
+        return this.getStatus();
+      } catch (error) {
+        this.state = {
+          ...this.state,
+          alertActive: false,
+          lastAlertAt: null,
+          lastEmailStatus: null,
+          error: error.message,
+        };
+        return this.getStatus();
+      }
+    })();
+
     try {
-      const payload = await this.fetchJson(this.sourceUrl);
-      const currentPosition = extractRotterdamPosition(payload, this.shipName);
-
-      if (!currentPosition) {
-        throw new Error(`ship_not_found:${this.shipName}`);
-      }
-
-      const previousPosition = this.state.currentPosition;
-      const wasAlertActive = this.state.alertActive;
-      const distanceMeters = previousPosition
-        ? calculateDistanceMeters(previousPosition, currentPosition)
-        : 0;
-      const alertActive = Boolean(previousPosition) && distanceMeters >= this.alertThresholdMeters;
-
-      this.state = {
-        ...this.state,
-        currentPosition,
-        previousPosition,
-        distanceMeters,
-        alertActive,
-        lastAlertAt: null,
-        lastEmailStatus: null,
-        error: null,
-      };
-
-      if (alertActive && !wasAlertActive) {
-        const lastEmailStatus = await this.sendAlert({
-          to: this.alertEmail,
-          subject: `Rotterdam alert: ${distanceMeters.toFixed(2)} meter verplaatst`,
-          body: buildAlertMessage(currentPosition, distanceMeters),
-        });
-
-        this.state.lastAlertAt = new Date().toISOString();
-        this.state.lastEmailStatus = lastEmailStatus;
-      }
-
-      return this.getStatus();
-    } catch (error) {
-      this.state.error = error.message;
-      this.state.alertActive = false;
-      return this.getStatus();
+      return await this.pollPromise;
+    } finally {
+      this.pollPromise = null;
     }
   }
 

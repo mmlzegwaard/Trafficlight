@@ -95,5 +95,6 @@ tracker.start();
 
 server.listen(port, host, () => {
   const displayHost = host === '0.0.0.0' || host === '::' ? 'localhost' : host;
-  console.log(`Rotterdam tracker draait op http://${displayHost}:${port}/rotterdam`);
+  const urlHost = displayHost.includes(':') ? `[${displayHost}]` : displayHost;
+  console.log(`Rotterdam tracker draait op http://${urlHost}:${port}/rotterdam`);
 });
