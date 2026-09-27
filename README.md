@@ -14,6 +14,7 @@ Stel deze omgevingsvariabelen in:
 - `ROTTERDAM_TRACKER_SOURCE_URL`: JSON-endpoint met de positie van het schip
 - `ROTTERDAM_TRACKER_ALERT_EMAIL`: optioneel emailadres voor alerts
 - `ROTTERDAM_TRACKER_POLL_INTERVAL_MS`: optioneel poll-interval in milliseconden
+- `HOST`: optioneel hostadres, standaard `0.0.0.0`
 - `PORT`: optionele poort, standaard `3000`
 
 De bron mag een enkel object, een array van schepen, of een object met `ships` bevatten. De parser accepteert onder andere `name`, `shipName`, `vesselName`, `latitude`, `lat`, `longitude`, `lon` en `lng`.
@@ -25,6 +26,21 @@ npm start
 ```
 
 Open daarna `http://localhost:3000/rotterdam`.
+
+## Extern bekijken
+De sandbox-URL van de agent is niet publiek zichtbaar. Om de site extern te bekijken kun je de app als container starten op een server of VPS:
+
+```bash
+docker build -t trafficlight /home/runner/work/Trafficlight/Trafficlight
+docker run -d \
+  -p 3000:3000 \
+  -e ROTTERDAM_TRACKER_SOURCE_URL="https://jouw-bron/rotterdam.json" \
+  -e ROTTERDAM_TRACKER_ALERT_EMAIL="mmlzegwaard@example.com" \
+  --name trafficlight \
+  trafficlight
+```
+
+Open daarna `http://<jouw-server>:3000/rotterdam`.
 
 ## API
 - `GET /api/rotterdam/status`

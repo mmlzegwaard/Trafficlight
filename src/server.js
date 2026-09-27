@@ -7,6 +7,7 @@ import { RotterdamTracker } from './tracker.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const publicDir = path.join(__dirname, '..', 'public');
+const host = process.env.HOST || '0.0.0.0';
 const port = Number(process.env.PORT) || 3000;
 const tracker = new RotterdamTracker();
 
@@ -92,6 +93,6 @@ const server = http.createServer(async (request, response) => {
 
 tracker.start();
 
-server.listen(port, () => {
-  console.log(`Rotterdam tracker draait op http://localhost:${port}/rotterdam`);
+server.listen(port, host, () => {
+  console.log(`Rotterdam tracker draait op http://${host}:${port}/rotterdam`);
 });
