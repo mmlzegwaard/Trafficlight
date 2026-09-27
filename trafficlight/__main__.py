@@ -46,6 +46,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def read_payload(source: str) -> Any:
+    http_source(source)
     with urlopen(source) as response:  # noqa: S310
         return json.load(response)
 

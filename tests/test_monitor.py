@@ -1,3 +1,4 @@
+import argparse
 import unittest
 from unittest.mock import patch
 
@@ -59,6 +60,19 @@ class ShipMonitorTests(unittest.TestCase):
 
         self.assertIsNone(notice)
 
+    def test_does_not_accumulate_sub_threshold_moves(self) -> None:
+        monitor = ShipMonitor("Cruiseship Rotterdam", threshold_meters=10)
+        first = Position(51.921295, 4.479622)
+        second = Position(51.921345, 4.479622)
+        third = Position(51.921395, 4.479622)
+        monitor.update(first)
+
+        second_notice = monitor.update(second)
+        third_notice = monitor.update(third)
+
+        self.assertIsNone(second_notice)
+        self.assertIsNone(third_notice)
+
 
 class ParseArgsTests(unittest.TestCase):
     def test_rejects_negative_threshold(self) -> None:
@@ -86,6 +100,17 @@ class BuildNoticeTests(unittest.TestCase):
                     longitude_field="longitude",
                     monitor=monitor,
                 )
+
+    def test_build_notice_rejects_non_http_source(self) -> None:
+        monitor = ShipMonitor("Cruiseship Rotterdam", threshold_meters=10)
+
+        with self.assertRaises(argparse.ArgumentTypeError):
+            build_notice(
+                source="file:///tmp/rotterdam.json",
+                latitude_field="latitude",
+                longitude_field="longitude",
+                monitor=monitor,
+            )
 
 
 if __name__ == "__main__":
