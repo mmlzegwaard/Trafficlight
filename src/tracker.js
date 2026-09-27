@@ -53,14 +53,14 @@ function normalizeShip(candidate) {
   };
 }
 
-export function extractRotterdamPosition(payload, shipName = DEFAULT_SHIP_NAME) {
-  const requestedShipName = shipName.toLowerCase();
+function nameMatchesShip(candidate, shipName) {
+  const name = String(candidate?.name ?? candidate?.shipName ?? candidate?.vesselName ?? '').toLowerCase();
+  return name.includes(shipName.toLowerCase());
+}
 
+export function extractRotterdamPosition(payload, shipName = DEFAULT_SHIP_NAME) {
   if (Array.isArray(payload)) {
-    const candidate = payload.find((item) => {
-      const name = String(item?.name ?? item?.shipName ?? item?.vesselName ?? '').toLowerCase();
-      return name.includes(requestedShipName);
-    });
+    const candidate = payload.find((item) => nameMatchesShip(item, shipName));
 
     return candidate ? normalizeShip(candidate) : null;
   }
@@ -71,10 +71,11 @@ export function extractRotterdamPosition(payload, shipName = DEFAULT_SHIP_NAME) 
     }
 
     if (payload.position) {
-      return normalizeShip({ ...payload.position, name: payload.name ?? shipName });
+      const candidate = { ...payload, ...payload.position };
+      return nameMatchesShip(candidate, shipName) ? normalizeShip(candidate) : null;
     }
 
-    return normalizeShip(payload);
+    return nameMatchesShip(payload, shipName) ? normalizeShip(payload) : null;
   }
 
   return null;
@@ -108,7 +109,7 @@ export class RotterdamTracker {
     shipName = DEFAULT_SHIP_NAME,
     alertThresholdMeters = DEFAULT_ALERT_THRESHOLD_METERS,
     sourceUrl = process.env.ROTTERDAM_TRACKER_SOURCE_URL,
-    alertEmail = process.env.ROTTERDAM_TRACKER_ALERT_EMAIL ?? 'mmlzegwaard',
+    alertEmail = process.env.ROTTERDAM_TRACKER_ALERT_EMAIL ?? '',
     pollIntervalMs = Number(process.env.ROTTERDAM_TRACKER_POLL_INTERVAL_MS) || DEFAULT_POLL_INTERVAL_MS,
     fetchJson = defaultFetchJson,
     sendAlert = sendMovementAlert,

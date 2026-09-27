@@ -22,6 +22,27 @@ test('extractRotterdamPosition finds Rotterdam in ship array', () => {
   assert.ok(position.updatedAt);
 });
 
+test('extractRotterdamPosition only accepts matching object payloads', () => {
+  assert.equal(
+    extractRotterdamPosition({ name: 'Another vessel', latitude: 1, longitude: 2 }),
+    null,
+  );
+
+  const position = extractRotterdamPosition({
+    shipName: 'Rotterdam',
+    latitude: 51.92,
+    longitude: 4.47,
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  });
+
+  assert.deepEqual(position, {
+    name: 'Rotterdam',
+    latitude: 51.92,
+    longitude: 4.47,
+    updatedAt: '2026-01-01T00:00:00.000Z',
+  });
+});
+
 test('tracker activates alert and requests email after movement above threshold', async () => {
   const payloads = [
     { name: 'Rotterdam', latitude: 51.9225, longitude: 4.47917, updatedAt: '2026-01-01T00:00:00.000Z' },

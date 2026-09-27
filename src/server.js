@@ -40,6 +40,17 @@ async function serveFile(response, filePath) {
   }
 }
 
+function resolvePublicPath(requestPath) {
+  const relativePath = requestPath.replace(/^\/+/, '') || 'rotterdam.html';
+  const resolvedPath = path.resolve(publicDir, relativePath);
+
+  if (resolvedPath !== publicDir && !resolvedPath.startsWith(`${publicDir}${path.sep}`)) {
+    return null;
+  }
+
+  return resolvedPath;
+}
+
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, `http://${request.headers.host}`);
 
@@ -66,8 +77,13 @@ const server = http.createServer(async (request, response) => {
   }
 
   if (request.method === 'GET') {
-    const normalizedPath = path.normalize(requestUrl.pathname).replace(/^([.][.][/\\])+/, '');
-    await serveFile(response, path.join(publicDir, normalizedPath));
+    const publicPath = resolvePublicPath(requestUrl.pathname);
+    if (!publicPath) {
+      sendJson(response, 404, { error: 'Niet gevonden' });
+      return;
+    }
+
+    await serveFile(response, publicPath);
     return;
   }
 

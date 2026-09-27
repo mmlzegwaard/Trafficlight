@@ -50,6 +50,18 @@
       const refreshButton = document.getElementById('refreshButton');
       let lastAlertAt = null;
 
+      function showClientError(message) {
+        updateView({
+          shipName: 'Rotterdam',
+          currentPosition: null,
+          distanceMeters: 0,
+          lastCheckedAt: new Date().toISOString(),
+          lastEmailStatus: null,
+          alertActive: false,
+          error: message
+        });
+      }
+
       function formatDate(value) {
         if (!value) return '-';
         return new Date(value).toLocaleString('nl-NL');
@@ -84,17 +96,34 @@
       }
 
       async function loadStatus() {
-        const response = await fetch('/api/rotterdam/status');
-        const status = await response.json();
-        updateView(status);
+        try {
+          const response = await fetch('/api/rotterdam/status');
+          if (!response.ok) {
+            throw new Error('Status ophalen mislukt.');
+          }
+
+          const status = await response.json();
+          updateView(status);
+        } catch (error) {
+          showClientError(error.message);
+        }
       }
 
       async function pollNow() {
         refreshButton.disabled = true;
-        const response = await fetch('/api/rotterdam/poll', { method: 'POST' });
-        const status = await response.json();
-        updateView(status);
-        refreshButton.disabled = false;
+        try {
+          const response = await fetch('/api/rotterdam/poll', { method: 'POST' });
+          if (!response.ok) {
+            throw new Error('Nieuwe meting ophalen mislukt.');
+          }
+
+          const status = await response.json();
+          updateView(status);
+        } catch (error) {
+          showClientError(error.message);
+        } finally {
+          refreshButton.disabled = false;
+        }
       }
 
       refreshButton.addEventListener('click', pollNow);
