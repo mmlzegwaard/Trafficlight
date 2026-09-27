@@ -136,10 +136,11 @@ export class RotterdamTracker {
     this.sendAlert = sendAlert;
     this.timer = null;
     this.pollPromise = null;
-    const initialCheckedAt = this.sourceUrl ? null : new Date().toISOString();
+    this.fallbackPositionUpdatedAt = this.sourceUrl ? null : new Date().toISOString();
+    const initialCheckedAt = this.sourceUrl ? null : this.fallbackPositionUpdatedAt;
     const initialFallbackPosition = this.sourceUrl
       ? null
-      : buildFallbackPosition(this.shipName, initialCheckedAt);
+      : buildFallbackPosition(this.shipName, this.fallbackPositionUpdatedAt);
 
     this.state = {
       shipName: this.shipName,
@@ -170,7 +171,9 @@ export class RotterdamTracker {
       if (!this.sourceUrl) {
         this.state = {
           ...this.state,
-          currentPosition: buildFallbackPosition(this.shipName, this.state.lastCheckedAt),
+          currentPosition:
+            this.state.currentPosition
+            ?? buildFallbackPosition(this.shipName, this.fallbackPositionUpdatedAt),
           previousPosition: null,
           distanceMeters: 0,
           alertActive: false,
