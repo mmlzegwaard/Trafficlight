@@ -18,6 +18,13 @@ def non_negative_number(value: str) -> float:
     return number
 
 
+def positive_number(value: str) -> float:
+    number = float(value)
+    if number <= 0:
+        raise argparse.ArgumentTypeError("must be greater than 0")
+    return number
+
+
 def http_source(value: str) -> str:
     parsed = urlparse(value)
     if parsed.scheme not in {"http", "https"} or not parsed.netloc:
@@ -41,7 +48,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--latitude-field", default="latitude")
     parser.add_argument("--longitude-field", default="longitude")
     parser.add_argument("--threshold-meters", type=non_negative_number, default=10)
-    parser.add_argument("--poll-interval", type=non_negative_number, default=60)
+    parser.add_argument("--poll-interval", type=positive_number, default=60)
     return parser.parse_args(argv)
 
 

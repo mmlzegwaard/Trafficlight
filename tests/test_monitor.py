@@ -60,7 +60,7 @@ class ShipMonitorTests(unittest.TestCase):
 
         self.assertIsNone(notice)
 
-    def test_does_not_accumulate_sub_threshold_moves(self) -> None:
+    def test_reports_when_small_moves_cross_threshold_from_last_notice(self) -> None:
         monitor = ShipMonitor("Cruiseship Rotterdam", threshold_meters=10)
         first = Position(51.921295, 4.479622)
         second = Position(51.921345, 4.479622)
@@ -71,7 +71,7 @@ class ShipMonitorTests(unittest.TestCase):
         third_notice = monitor.update(third)
 
         self.assertIsNone(second_notice)
-        self.assertIsNone(third_notice)
+        self.assertIn("Cruiseship Rotterdam moved", third_notice)
 
 
 class ParseArgsTests(unittest.TestCase):
@@ -82,6 +82,10 @@ class ParseArgsTests(unittest.TestCase):
     def test_rejects_negative_poll_interval(self) -> None:
         with self.assertRaises(SystemExit):
             parse_args(["https://example.com/rotterdam.json", "--poll-interval", "-1"])
+
+    def test_rejects_zero_poll_interval(self) -> None:
+        with self.assertRaises(SystemExit):
+            parse_args(["https://example.com/rotterdam.json", "--poll-interval", "0"])
 
     def test_rejects_non_http_source(self) -> None:
         with self.assertRaises(SystemExit):
