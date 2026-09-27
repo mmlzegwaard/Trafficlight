@@ -84,6 +84,12 @@ a {
   color: #8fc8ff;
 }
 
+a[aria-disabled='true'] {
+  color: #7c8aa5;
+  pointer-events: none;
+  text-decoration: none;
+}
+
 button {
   margin-top: 1rem;
   padding: 0.75rem 1rem;
