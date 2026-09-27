@@ -1,5 +1,6 @@
 import unittest
 
+from trafficlight.__main__ import parse_args
 from trafficlight.monitor import Position, ShipMonitor, extract_position, format_location, meters_between
 
 
@@ -56,6 +57,16 @@ class ShipMonitorTests(unittest.TestCase):
         notice = monitor.update(end)
 
         self.assertIsNone(notice)
+
+
+class ParseArgsTests(unittest.TestCase):
+    def test_rejects_negative_threshold(self) -> None:
+        with self.assertRaises(SystemExit):
+            parse_args(["https://example.com/rotterdam.json", "--threshold-meters", "-1"])
+
+    def test_rejects_negative_poll_interval(self) -> None:
+        with self.assertRaises(SystemExit):
+            parse_args(["https://example.com/rotterdam.json", "--poll-interval", "-1"])
 
 
 if __name__ == "__main__":
