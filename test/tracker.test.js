@@ -143,6 +143,7 @@ test('tracker returns fallback location when source is not configured', async ()
   const polledStatus = await tracker.poll();
   assert.equal(polledStatus.error, null);
   assert.equal(polledStatus.alertActive, false);
+  assert.equal(polledStatus.currentPosition.updatedAt, initialStatus.currentPosition.updatedAt);
   assert.deepEqual(polledStatus.currentPosition, {
     name: 'Rotterdam',
     latitude: 51.9225,
