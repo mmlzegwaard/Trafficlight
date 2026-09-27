@@ -63,12 +63,11 @@ class ShipMonitor:
             self._last_position = position
             return f"{self.ship_name} location: {format_location(position)}"
 
-        previous_position = self._last_position
-        self._last_position = position
-        distance = meters_between(previous_position, position)
+        distance = meters_between(self._last_position, position)
         if distance <= self.threshold_meters:
             return None
 
+        self._last_position = position
         return (
             f"{self.ship_name} moved {distance:.1f} meters to "
             f"{format_location(position)}"
