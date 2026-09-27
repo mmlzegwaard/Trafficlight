@@ -171,7 +171,7 @@ export class RotterdamTracker {
         this.state = {
           ...this.state,
           currentPosition: buildFallbackPosition(this.shipName, this.state.lastCheckedAt),
-          previousPosition: this.state.previousPosition,
+          previousPosition: null,
           distanceMeters: 0,
           alertActive: false,
           lastAlertAt: null,
