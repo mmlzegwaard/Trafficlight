@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 import time
 from typing import Any
 from urllib.request import urlopen
@@ -50,7 +51,8 @@ def main() -> int:
         )
         notice = monitor.update(position)
         if notice:
-            print(notice, flush=True)
+            sys.stdout.buffer.write(f"{notice}\n".encode("utf-8"))
+            sys.stdout.flush()
         time.sleep(args.poll_interval)
 
 
