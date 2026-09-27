@@ -134,6 +134,7 @@ export class RotterdamTracker {
       lastCheckedAt: null,
       error: null,
       sourceConfigured: Boolean(this.sourceUrl),
+      pollIntervalMs: this.pollIntervalMs,
     };
   }
 

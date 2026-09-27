@@ -49,6 +49,7 @@
       const mapLink = document.getElementById('mapLink');
       const refreshButton = document.getElementById('refreshButton');
       let lastAlertAt = null;
+      let refreshTimer = null;
 
       function showClientError(message) {
         updateView({
@@ -65,6 +66,16 @@
       function formatDate(value) {
         if (!value) return '-';
         return new Date(value).toLocaleString('nl-NL');
+      }
+
+      function scheduleRefresh(intervalMs) {
+        const nextInterval = Math.max(1000, Number(intervalMs) || 30000);
+
+        if (refreshTimer) {
+          clearInterval(refreshTimer);
+        }
+
+        refreshTimer = setInterval(loadStatus, nextInterval);
       }
 
       function updateView(status) {
@@ -96,7 +107,14 @@
 
         if (status.alertActive && status.lastAlertAt && status.lastAlertAt !== lastAlertAt) {
           lastAlertAt = status.lastAlertAt;
+          alertBanner.textContent = `Het schip is meer dan 10 meter verplaatst om ${formatDate(status.lastAlertAt)}.`;
         }
+
+        if (!status.alertActive) {
+          alertBanner.textContent = 'Het schip is meer dan 10 meter verplaatst.';
+        }
+
+        scheduleRefresh(status.pollIntervalMs);
       }
 
       async function loadStatus() {
@@ -132,7 +150,6 @@
 
       refreshButton.addEventListener('click', pollNow);
       loadStatus();
-      setInterval(loadStatus, 30000);
     </script>
   </body>
 </html>
