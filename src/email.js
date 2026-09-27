@@ -1,5 +1,9 @@
 import { spawn } from 'node:child_process';
 
+function sanitizeHeaderValue(value) {
+  return String(value).replace(/[\r\n]+/g, ' ').trim();
+}
+
 function runSendmail(message) {
   return new Promise((resolve) => {
     const child = spawn('sendmail', ['-t']);
@@ -34,6 +38,8 @@ export async function sendMovementAlert({ to, subject, body }) {
     return { sent: false, reason: 'email_not_configured' };
   }
 
-  const message = `To: ${to}\nSubject: ${subject}\nContent-Type: text/plain; charset=utf-8\n\n${body}`;
+  const safeTo = sanitizeHeaderValue(to);
+  const safeSubject = sanitizeHeaderValue(subject);
+  const message = `To: ${safeTo}\nSubject: ${safeSubject}\nContent-Type: text/plain; charset=utf-8\n\n${body}`;
   return runSendmail(message);
 }

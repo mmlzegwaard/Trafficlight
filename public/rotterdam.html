@@ -30,7 +30,7 @@
             <dd id="emailStatus">-</dd>
           </div>
         </dl>
-        <div id="alertBanner" class="alert hidden" role="alert">
+        <div id="alertBanner" class="alert hidden" role="alert" aria-hidden="true">
           Het schip is meer dan 10 meter verplaatst.
         </div>
         <p>
@@ -88,6 +88,7 @@
           : 'Nog niet verzonden';
 
         alertBanner.classList.toggle('hidden', !status.alertActive);
+        alertBanner.setAttribute('aria-hidden', String(!status.alertActive));
 
         if (status.alertActive && status.lastAlertAt && status.lastAlertAt !== lastAlertAt) {
           lastAlertAt = status.lastAlertAt;

@@ -158,6 +158,7 @@ export class RotterdamTracker {
       }
 
       const previousPosition = this.state.currentPosition;
+      const wasAlertActive = this.state.alertActive;
       const distanceMeters = previousPosition
         ? calculateDistanceMeters(previousPosition, currentPosition)
         : 0;
@@ -172,7 +173,7 @@ export class RotterdamTracker {
         error: null,
       };
 
-      if (alertActive) {
+      if (alertActive && !wasAlertActive) {
         const lastEmailStatus = await this.sendAlert({
           to: this.alertEmail,
           subject: `Rotterdam alert: ${distanceMeters.toFixed(2)} meter verplaatst`,

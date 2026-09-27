@@ -52,7 +52,7 @@ function resolvePublicPath(requestPath) {
 }
 
 const server = http.createServer(async (request, response) => {
-  const requestUrl = new URL(request.url, `http://${request.headers.host}`);
+  const requestUrl = new URL(request.url, 'http://localhost');
 
   if (request.method === 'GET' && requestUrl.pathname === '/api/rotterdam/status') {
     sendJson(response, 200, tracker.getStatus());
