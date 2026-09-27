@@ -1,10 +1,11 @@
 import unittest
+from unittest.mock import patch
 
-from trafficlight.__main__ import parse_args
+from trafficlight.__main__ import build_notice, parse_args
 from trafficlight.monitor import Position, ShipMonitor, extract_position, format_location, meters_between
 
 
-class MeterBetweenTests(unittest.TestCase):
+class MetersBetweenTests(unittest.TestCase):
     def test_same_location_has_zero_distance(self) -> None:
         self.assertEqual(meters_between(Position(51.0, 4.0), Position(51.0, 4.0)), 0)
 
@@ -67,6 +68,24 @@ class ParseArgsTests(unittest.TestCase):
     def test_rejects_negative_poll_interval(self) -> None:
         with self.assertRaises(SystemExit):
             parse_args(["https://example.com/rotterdam.json", "--poll-interval", "-1"])
+
+    def test_rejects_non_http_source(self) -> None:
+        with self.assertRaises(SystemExit):
+            parse_args(["file:///tmp/rotterdam.json"])
+
+
+class BuildNoticeTests(unittest.TestCase):
+    def test_build_notice_propagates_invalid_payload_errors(self) -> None:
+        monitor = ShipMonitor("Cruiseship Rotterdam", threshold_meters=10)
+
+        with patch("trafficlight.__main__.read_payload", return_value={"latitude": 91, "longitude": 4.479622}):
+            with self.assertRaises(ValueError):
+                build_notice(
+                    source="https://example.com/rotterdam.json",
+                    latitude_field="latitude",
+                    longitude_field="longitude",
+                    monitor=monitor,
+                )
 
 
 if __name__ == "__main__":
