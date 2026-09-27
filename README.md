@@ -31,7 +31,7 @@ Open daarna `http://localhost:3000/rotterdam`.
 De sandbox-URL van de agent is niet publiek zichtbaar. Om de site extern te bekijken kun je de app als container starten op een server of VPS:
 
 ```bash
-docker build -t trafficlight /home/runner/work/Trafficlight/Trafficlight
+docker build -t trafficlight .
 docker run -d \
   -p 3000:3000 \
   -e ROTTERDAM_TRACKER_SOURCE_URL="https://jouw-bron/rotterdam.json" \

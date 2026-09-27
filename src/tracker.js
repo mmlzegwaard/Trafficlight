@@ -170,6 +170,8 @@ export class RotterdamTracker {
         previousPosition,
         distanceMeters,
         alertActive,
+        lastAlertAt: null,
+        lastEmailStatus: null,
         error: null,
       };
 
