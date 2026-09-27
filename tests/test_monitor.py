@@ -46,6 +46,17 @@ class ShipMonitorTests(unittest.TestCase):
         self.assertIn("Cruiseship Rotterdam moved", notice)
         self.assertIn(format_location(Position(51.921495, 4.479622)), notice)
 
+    def test_exact_threshold_does_not_report(self) -> None:
+        start = Position(51.921295, 4.479622)
+        end = Position(51.921395, 4.479622)
+        threshold = meters_between(start, end)
+        monitor = ShipMonitor("Cruiseship Rotterdam", threshold_meters=threshold)
+        monitor.update(start)
+
+        notice = monitor.update(end)
+
+        self.assertIsNone(notice)
+
 
 if __name__ == "__main__":
     unittest.main()

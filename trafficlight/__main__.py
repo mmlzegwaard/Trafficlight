@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+from typing import Any
 from urllib.request import urlopen
 
 from .monitor import ShipMonitor, extract_position
@@ -24,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def read_payload(source: str) -> dict:
+def read_payload(source: str) -> Any:
     with urlopen(source) as response:  # noqa: S310
         return json.load(response)
 
