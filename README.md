@@ -11,7 +11,7 @@ Minimal Node-app om cruiseschip **Rotterdam** te volgen op een aparte pagina.
 ## Configuratie
 Stel deze omgevingsvariabelen in:
 
-- `ROTTERDAM_TRACKER_SOURCE_URL`: JSON-endpoint met de positie van het schip
+- `ROTTERDAM_TRACKER_SOURCE_URL`: JSON-endpoint met de positie van het schip (optioneel; zonder deze variabele gebruikt de app een laatste bekende fallbacklocatie)
 - `ROTTERDAM_TRACKER_ALERT_EMAIL`: optioneel emailadres voor alerts
 - `ROTTERDAM_TRACKER_POLL_INTERVAL_MS`: optioneel poll-interval in milliseconden
 - `HOST`: optioneel hostadres, standaard `0.0.0.0`

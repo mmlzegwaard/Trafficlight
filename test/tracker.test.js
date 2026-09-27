@@ -123,3 +123,30 @@ test('tracker only emails on alert transition', async () => {
 
   assert.equal(emailCalls.length, 1);
 });
+
+test('tracker returns fallback location when source is not configured', async () => {
+  const tracker = new RotterdamTracker({
+    sourceUrl: '',
+  });
+
+  const initialStatus = tracker.getStatus();
+  assert.equal(initialStatus.sourceConfigured, false);
+  assert.equal(initialStatus.error, null);
+  assert.deepEqual(initialStatus.currentPosition, {
+    name: 'Rotterdam',
+    latitude: 51.9225,
+    longitude: 4.47917,
+    updatedAt: initialStatus.currentPosition.updatedAt,
+  });
+  assert.ok(initialStatus.lastCheckedAt);
+
+  const polledStatus = await tracker.poll();
+  assert.equal(polledStatus.error, null);
+  assert.equal(polledStatus.alertActive, false);
+  assert.deepEqual(polledStatus.currentPosition, {
+    name: 'Rotterdam',
+    latitude: 51.9225,
+    longitude: 4.47917,
+    updatedAt: polledStatus.currentPosition.updatedAt,
+  });
+});

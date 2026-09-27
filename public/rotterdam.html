@@ -70,7 +70,9 @@
       function updateView(status) {
         summary.textContent = status.error
           ? status.error
-          : `Tracking actief voor ${status.shipName}.`;
+          : status.sourceConfigured
+            ? `Tracking actief voor ${status.shipName}.`
+            : `Tracking actief voor ${status.shipName} met laatste bekende locatie.`;
 
         if (status.currentPosition) {
           const { latitude, longitude } = status.currentPosition;
@@ -85,6 +87,8 @@
         distance.textContent = `${Number(status.distanceMeters || 0).toFixed(2)} meter`;
         emailStatus.textContent = status.lastEmailStatus
           ? `${status.lastEmailStatus.sent ? 'Verstuurd' : 'Niet verstuurd'} (${status.lastEmailStatus.reason})`
+          : !status.sourceConfigured
+            ? 'Niet van toepassing (statische locatie)'
           : 'Nog niet verzonden';
 
         alertBanner.classList.toggle('hidden', !status.alertActive);

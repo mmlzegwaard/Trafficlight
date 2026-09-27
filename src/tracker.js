@@ -3,6 +3,10 @@ import { sendMovementAlert } from './email.js';
 const DEFAULT_POLL_INTERVAL_MS = 60_000;
 const DEFAULT_ALERT_THRESHOLD_METERS = 10;
 const DEFAULT_SHIP_NAME = 'Rotterdam';
+const DEFAULT_FALLBACK_POSITION = {
+  latitude: 51.9225,
+  longitude: 4.47917,
+};
 
 function toRadians(value) {
   return (value * Math.PI) / 180;
@@ -104,6 +108,15 @@ function buildAlertMessage(currentPosition, distanceMeters) {
   ].join('\n');
 }
 
+function buildFallbackPosition(shipName, updatedAt) {
+  return {
+    name: shipName,
+    latitude: DEFAULT_FALLBACK_POSITION.latitude,
+    longitude: DEFAULT_FALLBACK_POSITION.longitude,
+    updatedAt,
+  };
+}
+
 export class RotterdamTracker {
   constructor({
     shipName = DEFAULT_SHIP_NAME,
@@ -122,15 +135,20 @@ export class RotterdamTracker {
     this.fetchJson = fetchJson;
     this.sendAlert = sendAlert;
     this.timer = null;
+    const initialCheckedAt = this.sourceUrl ? null : new Date().toISOString();
+    const initialFallbackPosition = this.sourceUrl
+      ? null
+      : buildFallbackPosition(this.shipName, initialCheckedAt);
+
     this.state = {
       shipName: this.shipName,
-      currentPosition: null,
+      currentPosition: initialFallbackPosition,
       previousPosition: null,
       distanceMeters: 0,
       alertActive: false,
       lastAlertAt: null,
       lastEmailStatus: null,
-      lastCheckedAt: null,
+      lastCheckedAt: initialCheckedAt,
       error: null,
       sourceConfigured: Boolean(this.sourceUrl),
     };
@@ -144,8 +162,16 @@ export class RotterdamTracker {
     this.state.lastCheckedAt = new Date().toISOString();
 
     if (!this.sourceUrl) {
-      this.state.error = 'ROTTERDAM_TRACKER_SOURCE_URL is niet ingesteld.';
-      this.state.alertActive = false;
+      this.state = {
+        ...this.state,
+        currentPosition: buildFallbackPosition(this.shipName, this.state.lastCheckedAt),
+        previousPosition: this.state.currentPosition,
+        distanceMeters: 0,
+        alertActive: false,
+        lastAlertAt: null,
+        lastEmailStatus: null,
+        error: null,
+      };
       return this.getStatus();
     }
 
