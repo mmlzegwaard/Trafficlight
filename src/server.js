@@ -94,7 +94,7 @@ const server = http.createServer(async (request, response) => {
 tracker.start();
 
 server.listen(port, host, () => {
-  const displayHost = host === '0.0.0.0' || host === '::' ? 'localhost' : host;
+  const displayHost = host === '0.0.0.0' ? 'localhost' : host === '::' ? '::1' : host;
   const formattedHost = displayHost.includes(':') ? `[${displayHost}]` : displayHost;
   console.log(`Rotterdam tracker draait op http://${formattedHost}:${port}/rotterdam`);
 });

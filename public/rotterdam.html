@@ -105,12 +105,15 @@
         alertBanner.classList.toggle('hidden', !status.alertActive);
         alertBanner.setAttribute('aria-hidden', String(!status.alertActive));
 
-        if (status.alertActive && status.lastAlertAt && status.lastAlertAt !== lastAlertAt) {
-          lastAlertAt = status.lastAlertAt;
-          alertBanner.textContent = `Het schip is meer dan 10 meter verplaatst om ${formatDate(status.lastAlertAt)}.`;
-        }
+        if (status.alertActive) {
+          const alertMoment = status.lastAlertAt ? formatDate(status.lastAlertAt) : 'de laatste meting';
+          alertBanner.textContent = `Het schip is meer dan 10 meter verplaatst om ${alertMoment}.`;
 
-        if (!status.alertActive) {
+          if (status.lastAlertAt && status.lastAlertAt !== lastAlertAt) {
+            lastAlertAt = status.lastAlertAt;
+          }
+        } else {
+          lastAlertAt = null;
           alertBanner.textContent = 'Het schip is meer dan 10 meter verplaatst.';
         }
 
