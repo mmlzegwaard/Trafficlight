@@ -1,6 +1,6 @@
 # Trafficlight
 
-Trafficlight monitors the location of the Cruiseship Rotterdam and prints a notice whenever the ship moves more than 10 meters.
+Trafficlight monitors the location of the Cruiseship Rotterdam and prints a notice whenever a new position sample differs by more than 10 meters from the previous sample.
 
 ## Usage
 
