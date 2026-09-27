@@ -73,6 +73,24 @@ test('extractRotterdamPosition supports ships array and nested position payloads
     longitude: 4.49,
     updatedAt: '2026-01-01T00:03:00.000Z',
   });
+
+  const mergedPositionPayload = extractRotterdamPosition({
+    name: 'Rotterdam',
+    latitude: 10,
+    longitude: 20,
+    position: {
+      latitude: 51.95,
+      longitude: 4.5,
+      updatedAt: '2026-01-01T00:04:00.000Z',
+    },
+  });
+
+  assert.deepEqual(mergedPositionPayload, {
+    name: 'Rotterdam',
+    latitude: 51.95,
+    longitude: 4.5,
+    updatedAt: '2026-01-01T00:04:00.000Z',
+  });
 });
 
 test('tracker activates alert and requests email after movement above threshold', async () => {
@@ -122,4 +140,33 @@ test('tracker only emails on alert transition', async () => {
   await tracker.poll();
 
   assert.equal(emailCalls.length, 1);
+});
+
+test('tracker reuses in-flight polls', async () => {
+  let fetchCalls = 0;
+  let releaseFetch;
+
+  const tracker = new RotterdamTracker({
+    sourceUrl: 'https://example.test/rotterdam.json',
+    fetchJson: () => {
+      fetchCalls += 1;
+      return new Promise((resolve) => {
+        releaseFetch = () => resolve({
+          name: 'Rotterdam',
+          latitude: 51.9225,
+          longitude: 4.47917,
+          updatedAt: '2026-01-01T00:00:00.000Z',
+        });
+      });
+    },
+  });
+
+  const firstPoll = tracker.poll();
+  const secondPoll = tracker.poll();
+  releaseFetch();
+
+  const [firstStatus, secondStatus] = await Promise.all([firstPoll, secondPoll]);
+
+  assert.equal(fetchCalls, 1);
+  assert.deepEqual(firstStatus, secondStatus);
 });

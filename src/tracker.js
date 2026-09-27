@@ -122,6 +122,7 @@ export class RotterdamTracker {
     this.fetchJson = fetchJson;
     this.sendAlert = sendAlert;
     this.timer = null;
+    this.pollPromise = null;
     this.state = {
       shipName: this.shipName,
       currentPosition: null,
@@ -141,6 +142,20 @@ export class RotterdamTracker {
   }
 
   async poll() {
+    if (this.pollPromise) {
+      return this.pollPromise;
+    }
+
+    this.pollPromise = this.runPoll();
+
+    try {
+      return await this.pollPromise;
+    } finally {
+      this.pollPromise = null;
+    }
+  }
+
+  async runPoll() {
     this.state.lastCheckedAt = new Date().toISOString();
 
     if (!this.sourceUrl) {
@@ -188,8 +203,13 @@ export class RotterdamTracker {
 
       return this.getStatus();
     } catch (error) {
-      this.state.error = error.message;
-      this.state.alertActive = false;
+      this.state = {
+        ...this.state,
+        alertActive: false,
+        lastAlertAt: null,
+        lastEmailStatus: null,
+        error: error.message,
+      };
       return this.getStatus();
     }
   }

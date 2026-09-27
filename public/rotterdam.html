@@ -76,9 +76,13 @@
           const { latitude, longitude } = status.currentPosition;
           position.textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
           mapLink.href = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=12/${latitude}/${longitude}`;
+          mapLink.removeAttribute('aria-disabled');
+          mapLink.removeAttribute('tabindex');
         } else {
           position.textContent = '-';
-          mapLink.href = '#';
+          mapLink.removeAttribute('href');
+          mapLink.setAttribute('aria-disabled', 'true');
+          mapLink.setAttribute('tabindex', '-1');
         }
 
         checkedAt.textContent = formatDate(status.lastCheckedAt);
