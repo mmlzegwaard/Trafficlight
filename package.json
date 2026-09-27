@@ -1,16 +1,18 @@
 {
   "name": "trafficlight",
   "version": "1.0.0",
-  "description": "Trafficlight",
-  "main": "index.js",
+  "description": "Cruiseschip Rotterdam tracker met alerting",
+  "type": "module",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "test": "node --test"
   },
-  "repository": {
-    "type": "git",
-    "url": "http://localhost:26831/mmlzegwaard/Trafficlight"
-  },
-  "keywords": [],
+  "keywords": [
+    "tracking",
+    "ship",
+    "rotterdam"
+  ],
   "author": "",
   "license": "ISC"
 }

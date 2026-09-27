@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Cruiseschip Rotterdam tracker</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="layout">
+      <section class="card">
+        <p class="eyebrow">Nieuwe pagina</p>
+        <h1>Cruiseschip Rotterdam</h1>
+        <p id="summary">Status wordt geladen…</p>
+        <dl class="details">
+          <div>
+            <dt>Laatste positie</dt>
+            <dd id="position">-</dd>
+          </div>
+          <div>
+            <dt>Laatste check</dt>
+            <dd id="checkedAt">-</dd>
+          </div>
+          <div>
+            <dt>Afstand sinds vorige meting</dt>
+            <dd id="distance">-</dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd id="emailStatus">-</dd>
+          </div>
+        </dl>
+        <div id="alertBanner" class="alert hidden" role="alert">
+          Het schip is meer dan 10 meter verplaatst.
+        </div>
+        <p>
+          <a id="mapLink" href="#" target="_blank" rel="noreferrer">Open locatie op kaart</a>
+        </p>
+        <button id="refreshButton" type="button">Nu controleren</button>
+      </section>
+    </main>
+    <script>
+      const summary = document.getElementById('summary');
+      const position = document.getElementById('position');
+      const checkedAt = document.getElementById('checkedAt');
+      const distance = document.getElementById('distance');
+      const emailStatus = document.getElementById('emailStatus');
+      const alertBanner = document.getElementById('alertBanner');
+      const mapLink = document.getElementById('mapLink');
+      const refreshButton = document.getElementById('refreshButton');
+      let lastAlertAt = null;
+
+      function formatDate(value) {
+        if (!value) return '-';
+        return new Date(value).toLocaleString('nl-NL');
+      }
+
+      function updateView(status) {
+        summary.textContent = status.error
+          ? status.error
+          : `Tracking actief voor ${status.shipName}.`;
+
+        if (status.currentPosition) {
+          const { latitude, longitude } = status.currentPosition;
+          position.textContent = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`;
+          mapLink.href = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=12/${latitude}/${longitude}`;
+        } else {
+          position.textContent = '-';
+          mapLink.href = '#';
+        }
+
+        checkedAt.textContent = formatDate(status.lastCheckedAt);
+        distance.textContent = `${Number(status.distanceMeters || 0).toFixed(2)} meter`;
+        emailStatus.textContent = status.lastEmailStatus
+          ? `${status.lastEmailStatus.sent ? 'Verstuurd' : 'Niet verstuurd'} (${status.lastEmailStatus.reason})`
+          : 'Nog niet verzonden';
+
+        alertBanner.classList.toggle('hidden', !status.alertActive);
+
+        if (status.alertActive && status.lastAlertAt && status.lastAlertAt !== lastAlertAt) {
+          lastAlertAt = status.lastAlertAt;
+          window.alert('Cruiseschip Rotterdam is meer dan 10 meter verplaatst.');
+        }
+      }
+
+      async function loadStatus() {
+        const response = await fetch('/api/rotterdam/status');
+        const status = await response.json();
+        updateView(status);
+      }
+
+      async function pollNow() {
+        refreshButton.disabled = true;
+        const response = await fetch('/api/rotterdam/poll', { method: 'POST' });
+        const status = await response.json();
+        updateView(status);
+        refreshButton.disabled = false;
+      }
+
+      refreshButton.addEventListener('click', pollNow);
+      loadStatus();
+      setInterval(loadStatus, 30000);
+    </script>
+  </body>
+</html>

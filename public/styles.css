@@ -1,0 +1,86 @@
+:root {
+  color-scheme: light dark;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #101728;
+  color: #f2f5f8;
+}
+
+.layout {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.card {
+  width: min(100%, 42rem);
+  background: #18233b;
+  border-radius: 1rem;
+  padding: 2rem;
+  box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.25);
+}
+
+.eyebrow {
+  margin: 0;
+  color: #95b7ff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+}
+
+h1 {
+  margin-top: 0.5rem;
+}
+
+.details {
+  display: grid;
+  gap: 1rem;
+}
+
+.details div {
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.details dt {
+  font-size: 0.85rem;
+  color: #95b7ff;
+}
+
+.details dd {
+  margin: 0.35rem 0 0;
+  font-size: 1rem;
+}
+
+.alert {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: #ef4444;
+  color: white;
+}
+
+.hidden {
+  display: none;
+}
+
+button,
+a {
+  color: #8fc8ff;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
